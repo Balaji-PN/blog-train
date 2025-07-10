@@ -18,21 +18,30 @@ import { BadgePlus } from "lucide-react";
 import { useState } from "react";
 import { createBlog } from "../actions/blog";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const NewBlog = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const onSubmitBlog = async () => {
     await createBlog({ title, content })
       .then((msg) => {
-        msg?.error
-          ? toast("Something went wrong", {
-              description: msg.error,
-            })
-          : toast("Blog created", {
-              description: "Blog Successfully Posted",
-            });
+        if (msg?.error) {
+          toast("Something went wrong", {
+            description: msg.error,
+          });
+        } else {
+          toast("Blog created", {
+            description: "Blog Successfully Posted",
+          });
+          setTitle("");
+          setContent("");
+          setOpen(false);
+          router.refresh();
+        }
       })
       .catch(() =>
         toast.error("Something went wrong", {
@@ -41,7 +50,7 @@ const NewBlog = () => {
       );
   };
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <form className="flex justify-end">
         <DialogTrigger asChild>
           <Button variant="outline" className="bg-green-300">
@@ -49,7 +58,7 @@ const NewBlog = () => {
             Create New Blog
           </Button>
         </DialogTrigger>
-        <DialogContent className="min-w-2xl sm:max-w-[425px]">
+        <DialogContent className="lg:max-w-2xl sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Create new Blog</DialogTitle>
             <DialogDescription>
